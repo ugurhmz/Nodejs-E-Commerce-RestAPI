@@ -29,13 +29,11 @@ router.post('/login', async (req, res) => {
        if (!hasUser) {
            return res.status(401).json("User not found, try again!")
        }
-        
-        const hashedPassword = CryptoJs.AES.decrypt (
+       const hashedPassword = CryptoJs.AES.decrypt (
             hasUser.password,
             process.env.PAS_SECURITY
-        )
-
-        const dbPassword = hashedPassword.toString(CryptoJs.enc.Utf8)
+       )
+       const dbPassword = hashedPassword.toString(CryptoJs.enc.Utf8)
        if  (dbPassword !== req.body.password) {
            return  res.status(401).json("Your password is wrong please fix it!")
        }
