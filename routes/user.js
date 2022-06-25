@@ -1,6 +1,6 @@
 const router = require("express").Router()
 const UserModel = require("../models/UserModel")
-const { tokenVerify,  tokenVerifyAuthorization } = require("../middleware/tokenVerify")
+const { tokenVerify,  tokenVerifyAuthorization, verifyTokenAdmin } = require("../middleware/tokenVerify")
 const CryptoJs = require('crypto-js')
 
 // UPDATE USER
@@ -21,11 +21,14 @@ router.put("/update-user/:id", tokenVerifyAuthorization, async (req, res) => {
     }
 })
 
-
-router.post("/posttest", (req, res) => {
-    const username = req.body.username
-    res.send('Username : ' + username)
+// DELETE USER
+router.delete("/delete-user/:id", verifyTokenAdmin, async (req, res) => {
+    try {
+        await UserModel.findByIdAndDelete(req.params.id)
+        res.status(200).json("User has been deleted.")
+    } catch(err) {
+        res.status(500).json(err)
+    }
 })
-
 
 module.exports = router

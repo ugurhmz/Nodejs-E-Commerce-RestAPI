@@ -18,6 +18,7 @@ const tokenVerify = (req, res, next) => {
     }
 };
 
+// authorization token
 const  tokenVerifyAuthorization = (req, res, next) => {
     tokenVerify(req, res, () => {
       if (req.user.id === req.params.id || req.user.isAdmin) {
@@ -26,9 +27,21 @@ const  tokenVerifyAuthorization = (req, res, next) => {
         res.status(403).json("You are not alowed to do that!");
       }
     });
-  };
+};
+
+// admin token
+const verifyTokenAdmin = (req, res, next) => {
+  tokenVerify(req, res,  () => {
+    if (req.user.isAdmin) {
+       next()
+    } else {
+      res.status(403).json("Your not allowed!")
+    }
+  })
+}
 
 module.exports = {
     tokenVerify,
-    tokenVerifyAuthorization
+    tokenVerifyAuthorization,
+    verifyTokenAdmin
 }
