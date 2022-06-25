@@ -1,4 +1,3 @@
-
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose")
@@ -12,7 +11,6 @@ dotenv.config()
 mongoose.connect(process.env.DB_URL)
 .then(() => console.log("Db Connection success!"))
 .catch( (err) => {console.log(err)})
-
 
 // ROUTE
 app.use(express.json()) // JSON Kabul
