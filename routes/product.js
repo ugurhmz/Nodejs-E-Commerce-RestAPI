@@ -1,5 +1,6 @@
 const ProductModel = require("../models/ProductModel")
 const { verifyTokenAdmin, tokenVerify} = require("../middleware/tokenVerify")
+const { route } = require("./user")
 const router = require("express").Router()
 
 // CREATE PRODUCT
@@ -36,5 +37,18 @@ router.get("/all", async (req,res) => {
     }
 })
 
+
+// GET PRODUCT
+router.get("/:id", async (req, res) => {
+    try {
+        const product = await ProductModel.findById(req.params.id)
+        res.status(200).json(product)
+    } catch(err) {
+        res.status(500).json({
+            err,
+            msg:"Product Not Found"
+        })
+    }
+})
 
 module.exports = router
