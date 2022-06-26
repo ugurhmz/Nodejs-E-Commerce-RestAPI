@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken')
 
 // REGISTER
 router.post("/register", async (req, res) => {
-
     const newUser = new UserModel({
         username: req.body.username,
         email: req.body.email,
@@ -24,10 +23,12 @@ router.post("/register", async (req, res) => {
 // LOGIN
 router.post('/login', async (req, res) => {
     try {
-        const hasUser = await UserModel.findOne({  username : req.body.username })
+        const hasUser = await UserModel.findOne({  email : req.body.email })
         
        if (!hasUser) {
-           return res.status(401).json("User not found, try again!")
+           return res.status(401).json({
+               msg: "User not found, try again!"
+           })
        }
        const hashedPassword = CryptoJs.AES.decrypt (
             hasUser.password,
@@ -35,7 +36,9 @@ router.post('/login', async (req, res) => {
        )
        const dbPassword = hashedPassword.toString(CryptoJs.enc.Utf8)
        if  (dbPassword !== req.body.password) {
-           return  res.status(401).json("Your password is wrong please fix it!")
+           return  res.status(401).json({
+               msg: "Your password is wrong please fix it!"
+           })
        }
      const accessToken = jwt.sign(
             {

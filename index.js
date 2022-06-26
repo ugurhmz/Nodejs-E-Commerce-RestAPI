@@ -7,6 +7,7 @@ const authRoute = require("./routes/auth")
 const productRoute = require("./routes/product")
 const cartRoute = require("./routes/cart")
 const orderRoute = require("./routes/order")
+const categoryRoute = require("./routes/category")
 
 dotenv.config()
 
@@ -22,6 +23,7 @@ app.use("/ugurapi/auth", authRoute)
 app.use("/ugurapi/product", productRoute)
 app.use("/ugurapi/carts", cartRoute)
 app.use("/ugurapi/orders", orderRoute)
+app.use("/ugurapi/category", categoryRoute)
 
 app.listen(3000, () => {
     console.log('App server start..');
