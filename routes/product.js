@@ -14,4 +14,27 @@ router.post("/add-product", verifyTokenAdmin, async (req, res) => {
     }
 })
 
+// GET ALL PRODUCTS, Filter by Query
+router.get("/all", async (req,res) => {
+    const qCategory = req.query.category
+
+    try {
+        let products;
+        if (qCategory) {
+            products = await ProductModel.find({
+                categories : {
+                    $in: [qCategory]
+                }
+            })
+        } else {
+            products = await ProductModel.find()
+        }
+
+        res.status(200).json(products)
+    } catch(err) {
+        res.status(500).json(err)
+    }
+})
+
+
 module.exports = router
