@@ -7,7 +7,7 @@ const ProductSchema = new mongoose.Schema(
         prdImg: { type: String, required: true },
         categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CategoryModel', required: true }],
         size: { type: String },
-        voting: { type: Number },
+        voting: { type: Number, min: 0, max: 5 },
         price: { type: Number, required: true}
     },
     { timestamps: true}

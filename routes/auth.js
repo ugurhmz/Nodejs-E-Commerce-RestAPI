@@ -5,6 +5,25 @@ const jwt = require('jsonwebtoken')
 
 // REGISTER
 router.post("/register", async (req, res) => {
+
+    if (!req.body.username || !req.body.email || !req.body.password) {
+        return res.status(401).json({
+            msg: "Fields cannot be left blank!"
+        })
+    }
+    if (req.body.password.length < 6 ) {
+        return  res.status(401).json({
+            msg: "Password must be 6 characters or larger!"
+        })
+    } 
+
+    let regex = new RegExp('[a-z0-9]+@[a-z]+\.[a-z]{2,3}');
+    if (!regex.test(req.body.email)) {
+       return  res.status(401).json({
+        msg: "Please enter valid e-mail!"
+    })
+    }
+
     const newUser = new UserModel({
         username: req.body.username,
         email: req.body.email,
