@@ -23,6 +23,17 @@ router.post("/register", async (req, res) => {
         msg: "Please enter valid e-mail!"
     })
     }
+    
+
+    const isEmail = await UserModel.find({ 
+        email: req.body.email
+    });
+
+    if (isEmail[0]) {
+        return  res.status(401).json({
+        msg: "E-mail already exist!"
+        })
+    }
 
     const newUser = new UserModel({
         username: req.body.username,
@@ -32,6 +43,7 @@ router.post("/register", async (req, res) => {
     })
 
     try {
+
         const savedUser = await newUser.save()
         res.status(201).json(savedUser)
     } catch (err) {
