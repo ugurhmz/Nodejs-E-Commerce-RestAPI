@@ -17,6 +17,8 @@ mongoose.connect(process.env.DB_URL)
 .catch( (err) => {console.log(err)})
 
 // ROUTE
+
+
 app.use(express.json()) // JSON Kabul
 app.use("/ugurapi/users", userRoute)
 app.use("/ugurapi/auth", authRoute)

@@ -53,6 +53,14 @@ router.post("/register", async (req, res) => {
 
 // LOGIN
 router.post('/login', async (req, res) => {
+
+    if (!req.body.email || !req.body.password) {
+        return res.status(401).json({
+            msg: "Fields cannot be left blank!"
+        })
+    }
+
+
     try {
         const hasUser = await UserModel.findOne({  email : req.body.email })
         

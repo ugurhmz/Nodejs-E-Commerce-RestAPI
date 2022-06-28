@@ -1,10 +1,10 @@
+const { json } = require("express/lib/response");
 const jwt = require("jsonwebtoken")
 
 const tokenVerify = (req, res, next) => {
     const authHeader = req.headers.token
     if (authHeader) {
         const splitToken = authHeader.split(" ")[1]
-        
         jwt.verify(splitToken, process.env.JWT_SECURITY, (err, user) => {
             if (err)  { 
                 res.status(403).json("Token is not valid!") 
