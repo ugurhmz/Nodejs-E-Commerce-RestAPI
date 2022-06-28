@@ -31,6 +31,12 @@ router.get("/all", async (req,res) => {
             products = await ProductModel.find()
         }
 
+        if (products.length <= 0 ) {
+            res.status(401).json({
+                msg: "There are no products to show in the database!"
+            })
+        }
+
         res.status(200).json(products)
     } catch(err) {
         res.status(500).json(err)
