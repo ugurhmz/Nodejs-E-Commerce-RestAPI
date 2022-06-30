@@ -27,6 +27,12 @@ router.post("/create", verifyTokenAdmin, async (req, res) => {
 router.get("/get-all", async (req,res) => {
     try {
         let allCategories = await CategoryModel.find()
+
+       //* Search Category
+       /*
+       let allCategories =  await CategoryModel.find({
+           "name" : req.query.category
+       })*/
         res.status(200).json(allCategories)
     } catch(error) {
         res.status(500).json(error)

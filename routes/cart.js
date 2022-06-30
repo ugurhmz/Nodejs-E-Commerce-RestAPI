@@ -1,12 +1,16 @@
 const CartModel = require("../models/CartModel")
+const ProductModel = require("../models/ProductModel")
 const { tokenVerify, tokenVerifyAuthorization } = require("../middleware/tokenVerify")
 const router = require("express").Router()
 
 // CART CREATE
 router.post("/", tokenVerify, async (req, res) => {
-    const newCart  = new CartModel(req.body)
+    const { products } = req.body
+    //const thisProduct = await ProductModel.findOne({products}) // Maybe You can use later
+    const newPost = new CartModel(req.body)
+     //newPost.products = thisProduct  // Maybe You can use later
     try {
-        const saveCart = await newCart.save()
+        const saveCart = await newPost.save()
         res.status(200).json(saveCart)
     } catch(err) {
         res.status(500).json(err)
@@ -39,9 +43,12 @@ router.delete("/delete/:id", tokenVerifyAuthorization, async (req, res) => {
 })
 
 // GET USER CART
-router.get("/user-cart/:id", tokenVerifyAuthorization, async (req,res) => {
+router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
     try {
-        const cart = await CartModel.findOne({ userId: req.params.id })
+        const cart = await (await CartModel.findOne({ userId: req.params.id })).populate({
+            path : "products",
+            select: "title description"
+        })
         res.status(200).json(cart)
     } catch(err) {
         res.status(500).json(err)
