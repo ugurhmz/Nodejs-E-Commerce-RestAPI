@@ -2,7 +2,6 @@ const ProductModel = require("../models/ProductModel")
 const { verifyTokenAdmin, tokenVerify} = require("../middleware/tokenVerify")
 const { route } = require("./user")
 const router = require("express").Router()
-const joinQuery = require("mongo-join-query");
 const CategoryModel = require("../models/CategoryModel");
 
 // CREATE PRODUCT
@@ -24,27 +23,25 @@ router.get("/all", async (req,res) => {
     try {
         let products;
         if (qCategory) {
+            products = await ProductModel.aggregate([
+                {"$lookup":{
+                    "from":"categormodels",
+                    "localField":"categories",
+                    "foreignField":"_id",
+                    "as":"categories"
+                }}, {
+                    "$match": {
+                        "categories.name" : qCategory
+                    }
+                }
+            ])
 
-            //! SONRA BAKILACAK, QUERY'e göre getir.
-            // console.log(qCategory);
-            // products = await ProductModel.aggregate([
-            //     { "$match": { "categories.name" : "Computer"}},
-            //     {
-            //         "$lookup": {
-            //             "from": "categormodels",
-            //             "localField": "categories",
-            //             "foreignField": "_id",
-            //             "as": "categormodels"
-            //         }
-            //     },
-            //     { "$unwind": "$categormodels" }
-            // ])
         } else {
             products = await ProductModel.find().populate("categories")
         }
 
         if (products.length <= 0 ) {
-            res.status(401).json({
+            return res.status(401).json({
                 msg: "There are no products to show in the database!"
             })
         }
