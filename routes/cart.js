@@ -1,6 +1,7 @@
 const CartModel = require("../models/CartModel")
 const ProductModel = require("../models/ProductModel")
 const { tokenVerify, tokenVerifyAuthorization } = require("../middleware/tokenVerify")
+const { populate } = require("../models/CartModel")
 const router = require("express").Router()
 
 // CART CREATE
@@ -45,10 +46,25 @@ router.delete("/delete/:id", tokenVerifyAuthorization, async (req, res) => {
 // GET USER CART
 router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
     try {
-        const cart = await (await CartModel.findOne({ userId: req.params.id })).populate({
-            path : "products",
-            select: "title description"
-        })
+        const cart = await  CartModel.findOne({ userId: req.params.id }).populate(
+          [
+            {
+                path: "products.prd",
+                model : "ProductModel",
+                populate: {
+                    path: "categories",
+                    model : "CategorModel",
+                    select: "_id name  categoryImg createdAt"
+                }
+            },
+             {
+                path: "userId",
+                model : "UserModel",
+                select: "_id username email isAdmin userImg createdAt"
+            }
+          ]
+           
+        )
         res.status(200).json(cart)
     } catch(err) {
         res.status(500).json(err)
