@@ -19,7 +19,6 @@ router.post("/add-product", verifyTokenAdmin, async (req, res) => {
 // GET ALL PRODUCTS, Filter by Query
 router.get("/all", async (req,res) => {
     const qCategory = req.query.category
-
     try {
         let products;
         if (qCategory) {
@@ -31,7 +30,7 @@ router.get("/all", async (req,res) => {
                     "as":"categories"
                 }}, {
                     "$match": {
-                        "categories.name" : qCategory
+                        "categories.name" : { $regex: new RegExp(`^${qCategory}$`), $options: 'i' }
                     }
                 }
             ])
