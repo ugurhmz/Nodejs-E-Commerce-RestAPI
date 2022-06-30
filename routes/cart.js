@@ -1,7 +1,5 @@
 const CartModel = require("../models/CartModel")
-const ProductModel = require("../models/ProductModel")
 const { tokenVerify, tokenVerifyAuthorization } = require("../middleware/tokenVerify")
-const { populate } = require("../models/CartModel")
 const router = require("express").Router()
 
 // CART CREATE
@@ -19,17 +17,23 @@ router.post("/", tokenVerify, async (req, res) => {
 })
 
 // UPDATE CART
-router.put("/update/:id", tokenVerifyAuthorization, async (req, res) => {
-    try {
-        const updateCart = await CartModel.findByIdAndUpdate(
-            req.params.id,
-            {
-                $set: req.body
-            }
-        )
-        res.status(200).json(updateCart)
-    } catch(err) {
-        res.status(500).json(err)
+router.put("/update/cartId/:id", tokenVerify, async (req, res) => {
+    let findCart;
+   try {
+     findCart  = await CartModel.findOne({
+        _id : req.params.id
+    })
+
+    let allItems = req.body.products
+    let fromBodyProducts =  allItems.map( (item) => {
+            return item
+    })
+    findCart.products = fromBodyProducts
+    const updateCart = await findCart.save()
+    res.status(200).json(updateCart)
+
+   } catch(err) {
+       res.status(500).json("No such record found!")
     }
 })
 
