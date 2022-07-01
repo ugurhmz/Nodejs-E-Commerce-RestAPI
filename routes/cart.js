@@ -78,7 +78,7 @@ router.put("/update/cartId/:id", tokenVerify, async (req, res) => {
 })
 
 // DELETE CART
-router.delete("/delete/:id", tokenVerifyAuthorization, async (req, res) => {
+router.delete("/delete-all/:id", tokenVerify, async (req, res) => {
     try {
         await CartModel.findByIdAndDelete(req.params.id)
         res.status(200).json("Card successfully deleted")
@@ -115,6 +115,32 @@ router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
     }
 })
 
+
+// DELETE ONE ITEM IN CART
+router.delete("/cart/delete-product/", tokenVerify, async (req, res) => {
+  const owner = req.body.owner;
+  console.log('itemId', req.query);
+ const itemId = req.query.itemId;
+  try {
+    let cart = await CartModel.findOne({ owner });
+
+    const itemIndex = cart.items.findIndex((item) => item.itemId == itemId);
+    
+    if (itemIndex > -1) {
+      let item = cart.items[itemIndex];
+      cart.items.splice(itemIndex, 1);
+     
+      cart = await cart.save();
+
+      res.status(200).send(cart);
+    } else {
+    res.status(404).send("item not found");
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).send();
+  }
+});
 
 
 module.exports = router
