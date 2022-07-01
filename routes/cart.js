@@ -3,47 +3,60 @@ const ProductModel = require("../models/ProductModel")
 const { tokenVerify, tokenVerifyAuthorization } = require("../middleware/tokenVerify")
 const router = require("express").Router()
 
-// CART CREATE
+
+
+//add cart
 router.post("/", tokenVerify, async (req, res) => {
- 
-   const foundCart = await CartModel.findOne({
-     userId: req.body.userId
-   })
-   
+  const owner = req.body.owner;
+  const { itemId, quantity } = req.body;
 
-   console.log(foundCart);
+  try {
+    const cart = await CartModel.findOne({ owner });
+    const item = await ProductModel.findOne({ _id: itemId });
 
- 
-   if (foundCart) {
-  
-    try {
-
-      const updateCart = await CartModel.findOneAndUpdate({
-          userId: req.body.userId
-        },
-        {
-        $set: req.body,
-        },
-        { new: true })
-
-        res.status(200).json(updateCart)
-
-    } catch(err) {
-      res.status(500).json(err)
+    if (!item) {
+      res.status(404).send({ message: "item not found" });
+      return;
     }
+    const price = item.price;
+    const name = item.name;
+    //If cart already exists for user,
+    if (cart) {
+      const itemIndex = cart.items.findIndex((item) => item.itemId == itemId);
+      //check if product exists or not
 
+      if (itemIndex > -1) {
+        let product = cart.items[itemIndex];
 
-   }  else { // KART YOKSA YENİ OLUŞTUR
-        const newPost = new CartModel(req.body)
-
-        try {
-            const saveCart = await newPost.save()
-            res.status(200).json(saveCart)
-        } catch(err) {
-            res.status(500).json(err)
+        if (  product.quantity < 1) {
+          return res.status(401).json('Product quantity can not be 0!')
         }
-   }
-})
+      
+        product.quantity += quantity;
+        console.log(product.quantity);
+        cart.items[itemIndex] = product;
+        await cart.save();
+        res.status(200).send(cart);
+      } else {
+        cart.items.push({ itemId,  quantity});
+       
+        await cart.save();
+        res.status(200).send(cart);
+      }
+    } else {
+      //no cart exists, create one
+      const newCart = await CartModel.create({
+        owner,
+        items: [{ itemId, name, quantity, price }],
+        bill: quantity * price,
+      });
+      return res.status(201).send(newCart);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("something went wrong");
+  }
+});
 
 // UPDATE CART
 router.put("/update/cartId/:id", tokenVerify, async (req, res) => {
@@ -77,10 +90,10 @@ router.delete("/delete/:id", tokenVerifyAuthorization, async (req, res) => {
 // GET USER CART
 router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
     try {
-        const cart = await  CartModel.findOne({ userId: req.params.id }).populate(
+        const cart = await  CartModel.findOne({ owner: req.params.id }).populate(
           [
             {
-                path: "products.prd",
+                path: "items.itemId",
                 model : "ProductModel",
                 populate: {
                     path: "categories",
@@ -89,7 +102,7 @@ router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
                 }
             },
              {
-                path: "userId",
+                path: "owner",
                 model : "UserModel",
                 select: "_id username email isAdmin userImg createdAt"
             }
