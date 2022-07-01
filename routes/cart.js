@@ -1,40 +1,67 @@
 const CartModel = require("../models/CartModel")
+const ProductModel = require("../models/ProductModel")
 const { tokenVerify, tokenVerifyAuthorization } = require("../middleware/tokenVerify")
 const router = require("express").Router()
 
 // CART CREATE
 router.post("/", tokenVerify, async (req, res) => {
-    const { products } = req.body
-    //const thisProduct = await ProductModel.findOne({products}) // Maybe You can use later
-    const newPost = new CartModel(req.body)
-     //newPost.products = thisProduct  // Maybe You can use later
+ 
+   const foundCart = await CartModel.findOne({
+     userId: req.body.userId
+   })
+   
+
+   console.log(foundCart);
+
+ 
+   if (foundCart) {
+  
     try {
-        const saveCart = await newPost.save()
-        res.status(200).json(saveCart)
+
+      const updateCart = await CartModel.findOneAndUpdate({
+          userId: req.body.userId
+        },
+        {
+        $set: req.body,
+        },
+        { new: true })
+
+        res.status(200).json(updateCart)
+
     } catch(err) {
-        res.status(500).json(err)
+      res.status(500).json(err)
     }
+
+
+   }  else { // KART YOKSA YENİ OLUŞTUR
+        const newPost = new CartModel(req.body)
+
+        try {
+            const saveCart = await newPost.save()
+            res.status(200).json(saveCart)
+        } catch(err) {
+            res.status(500).json(err)
+        }
+   }
 })
 
 // UPDATE CART
 router.put("/update/cartId/:id", tokenVerify, async (req, res) => {
-    let findCart;
-   try {
-     findCart  = await CartModel.findOne({
-        _id : req.params.id
-    })
+  try {
 
-    let allItems = req.body.products
-    let fromBodyProducts =  allItems.map( (item) => {
-            return item
-    })
-    findCart.products = fromBodyProducts
-    const updateCart = await findCart.save()
-    res.status(200).json(updateCart)
+    const updateCart =  await CartModel.findOneAndUpdate(
+        req.params.id
+      ,
+      {
+      $set: req.body,
+      },
+      { new: true })
 
-   } catch(err) {
-       res.status(500).json("No such record found!")
-    }
+      res.status(200).json(updateCart)
+
+  } catch(err) {
+    res.status(500).json(err)
+  }
 })
 
 // DELETE CART
