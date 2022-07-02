@@ -112,6 +112,16 @@ router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
           ]
            
         )
+          // USER CART ITEMS == 0  , DELETE WHOLE CART FOR USER
+          if (cart.items.length == 0) {
+            // CARTIN TAMAMINI SİL o user için.
+            try {
+                await CartModel.findByIdAndDelete(cart.id)
+            } catch {
+
+            }
+          }
+
         res.status(200).json(cart)
     } catch(err) {
         res.status(500).json(err)
