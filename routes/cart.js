@@ -117,9 +117,9 @@ router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
 
 
 // DELETE ONE ITEM IN CART
-router.delete("/cart/delete-product/", tokenVerify, async (req, res) => {
+router.delete("/delete-product/", tokenVerify, async (req, res) => {
   const owner = req.body.owner;
-  console.log('itemId', req.query);
+  console.log('itemId', req.query.itemId);
  const itemId = req.query.itemId;
   try {
     let cart = await CartModel.findOne({ owner });
