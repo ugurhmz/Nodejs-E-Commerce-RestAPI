@@ -20,6 +20,8 @@ router.post("/", tokenVerify, async (req, res) => {
     }
     const price = item.price;
     const name = item.name;
+
+
     //If cart already exists for user,
     if (cart) {
       const itemIndex = cart.items.findIndex((item) => item.itemId == itemId);
@@ -78,7 +80,7 @@ router.put("/update/cartId/:id", tokenVerify, async (req, res) => {
 })
 
 // DELETE CART
-router.delete("/delete-all/:id", tokenVerify, async (req, res) => {
+router.delete("/delete-all/cartId/:id", tokenVerify, async (req, res) => {
     try {
         await CartModel.findByIdAndDelete(req.params.id)
         res.status(200).json("Card successfully deleted")
@@ -89,6 +91,7 @@ router.delete("/delete-all/:id", tokenVerify, async (req, res) => {
 
 // GET USER CART
 router.get("/user-id/:id", tokenVerifyAuthorization, async (req,res) => {
+ 
     try {
         const cart = await  CartModel.findOne({ owner: req.params.id }).populate(
           [

@@ -8,7 +8,7 @@ const productRoute = require("./routes/product")
 const cartRoute = require("./routes/cart")
 const orderRoute = require("./routes/order")
 const categoryRoute = require("./routes/category")
-
+const favRoute = require("./routes/favourites")
 dotenv.config()
 
 // CONNECTION
@@ -26,6 +26,7 @@ app.use("/ugurapi/product", productRoute)
 app.use("/ugurapi/carts", cartRoute)
 app.use("/ugurapi/orders", orderRoute)
 app.use("/ugurapi/category", categoryRoute)
+app.use("/ugurapi/favourites", favRoute )
 
 app.listen(3000, () => {
     console.log('App server start..');
