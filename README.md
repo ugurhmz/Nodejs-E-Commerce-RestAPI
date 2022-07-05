@@ -1,3 +1,7 @@
+### ALL APIS
+<img width="366" height="520" alt="Ekran Resmi 2022-07-06 02 10 57" src="https://user-images.githubusercontent.com/13710309/177431716-821ffde1-81f6-4374-b147-6ee1f30f2a79.png">
+
+
 ### LOGIN
 > POST: localhost:3000/ugurapi/auth/login</br>
 <img width="1175" height="400" alt="Ekran Resmi 2022-07-06 01 00 12" src="https://user-images.githubusercontent.com/13710309/177425109-160f5065-c09a-49db-8ead-0b7205e17348.png">
@@ -39,3 +43,28 @@ _______
 
 ### UPDATE USERT CART ITEMS (With token )
 > PUT: localhost:3000/ugurapi/carts/update/cartId/62bf02d0d5b709a8ec87de84
+<img width="1019" height="400"  alt="Ekran Resmi 2022-07-06 01 49 11" src="https://user-images.githubusercontent.com/13710309/177429634-40c07884-033b-4767-8461-4bb279268a23.png">
+
+
+### DELETE USER CART ( Token )
+> DELETE : localhost:3000/ugurapi/carts/delete-all/cartId/62bf827a11bd359b918748fb
+<img width="1018" alt="Ekran Resmi 2022-07-06 01 50 45" src="https://user-images.githubusercontent.com/13710309/177429769-4d3a27b1-4abe-4d0e-a7ff-b07595c47c85.png">
+
+### DELETE USER CART ITEMS ( Token )
+> DELETE : localhost:3000/ugurapi/carts/delete-product?itemId=62bdcbe8486e163570c7e099
+<img width="1035" height="400" alt="Ekran Resmi 2022-07-06 02 01 55" src="https://user-images.githubusercontent.com/13710309/177430856-1e2a669b-014d-42b2-b6c5-1d53fe99a602.png">
+
+_______
+### ALL CATEGORIES
+> GET: localhost:3000/ugurapi/category/get-all
+<img width="1045" height="400" alt="Ekran Resmi 2022-07-06 02 05 59" src="https://user-images.githubusercontent.com/13710309/177431209-a42e107b-8134-4b7e-8372-c8967541b096.png">
+
+### GET ONE CATEGORY
+> GET: localhost:3000/ugurapi/category/62b8ce863c3719e64bbb3ad1
+<img width="837" alt="Ekran Resmi 2022-07-06 02 07 18" src="https://user-images.githubusercontent.com/13710309/177431356-938b4f27-2be7-4161-a1b2-188ebe139f7e.png">
+
+
+### ADD CATEGORY ( Only ADMIN )
+> POST: localhost:3000/ugurapi/category/create
+<img width="904" alt="Ekran Resmi 2022-07-06 02 09 01" src="https://user-images.githubusercontent.com/13710309/177431490-95d01058-79cc-4699-be67-affef7cc9413.png">
+
