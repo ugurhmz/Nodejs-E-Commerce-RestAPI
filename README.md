@@ -1,6 +1,6 @@
 # Nodejs-E-Commerce-RestAPI
-- .env 
-DB_URL =
-PAS_SECURITY =
+### .env </br>
+DB_URL = </br>
+PAS_SECURITY = </br>
 JWT_SECURITY =
 __________
