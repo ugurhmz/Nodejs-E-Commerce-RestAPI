@@ -13,14 +13,26 @@ const {
   getUserController,
 } = require("../controllers/User");
 
+const userJoi = require("../validations/User");
+const validate = require("../middleware/validate");
+
 // REGISTER
-router.post("/register", registerController);
+router.post(
+  "/register",
+  validate(userJoi.registerValidation),
+  registerController
+);
 
 // LOGIN
-router.post("/login", loginController);
+router.post("/login", validate(userJoi.loginValidation), loginController);
 
 // UPDATE
-router.put("/update-user/:id", tokenVerifyAuthorization, updateController);
+router.put(
+  "/update-user/:id",
+  validate(userJoi.updateValidation),
+  tokenVerifyAuthorization,
+  updateController
+);
 
 // DELETE
 router.delete("/delete-user/:id", verifyTokenAdmin, deleteController);

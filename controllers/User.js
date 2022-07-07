@@ -1,6 +1,8 @@
 const UserModel = require("../models/UserModel");
 const CryptoJs = require("crypto-js");
 const jwt = require("jsonwebtoken");
+const httpStatus = require("http-status");
+
 // REGISTER
 exports.registerController = async (req, res) => {
   if (!req.body.username || !req.body.email || !req.body.password) {
@@ -40,9 +42,9 @@ exports.registerController = async (req, res) => {
 
   try {
     const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+    res.status(httpStatus.OK).json(savedUser);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
 };
 
