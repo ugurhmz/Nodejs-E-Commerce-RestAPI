@@ -5,30 +5,12 @@ const httpStatus = require("http-status");
 
 // REGISTER
 exports.registerController = async (req, res) => {
-  if (!req.body.username || !req.body.email || !req.body.password) {
-    return res.status(401).json({
-      msg: "Fields cannot be left blank!",
-    });
-  }
-  if (req.body.password.length < 6) {
-    return res.status(401).json({
-      msg: "Password must be 6 characters or larger!",
-    });
-  }
-
-  let regex = new RegExp("[a-z0-9]+@[a-z]+.[a-z]{2,3}");
-  if (!regex.test(req.body.email)) {
-    return res.status(401).json({
-      msg: "Please enter valid e-mail!",
-    });
-  }
-
   const isEmail = await UserModel.find({
     email: req.body.email,
   });
 
   if (isEmail[0]) {
-    return res.status(401).json({
+    return res.status(httpStatus.CONFLICT).json({
       msg: "E-mail already exist!",
     });
   }
@@ -51,7 +33,7 @@ exports.registerController = async (req, res) => {
 // LOGIN
 exports.loginController = async (req, res) => {
   if (!req.body.email || !req.body.password) {
-    return res.status(401).json({
+    return res.status(httpStatus.BAD_REQUEST).json({
       msg: "Fields cannot be left blank!",
     });
   }
@@ -60,17 +42,14 @@ exports.loginController = async (req, res) => {
     const hasUser = await UserModel.findOne({ email: req.body.email });
 
     if (!hasUser) {
-      return res.status(401).json({
+      return res.status(httpStatus.NOT_FOUND).json({
         msg: "User not found, try again!",
       });
     }
-    const hashedPassword = CryptoJs.AES.decrypt(
-      hasUser.password,
-      process.env.PAS_SECURITY
-    );
+    const hashedPassword = CryptoJs.AES.decrypt(hasUser.password, process.env.PAS_SECURITY);
     const dbPassword = hashedPassword.toString(CryptoJs.enc.Utf8);
     if (dbPassword !== req.body.password) {
-      return res.status(401).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         msg: "Your password is wrong please fix it!",
       });
     }
@@ -89,34 +68,27 @@ exports.loginController = async (req, res) => {
 
     // response
     const loginMsg = "Login success.";
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
       ...exceptThePassword,
       accessToken,
       loginMsg,
     });
   } catch (err) {
-    res.status(500).json(err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
 };
 
 // UPDATE USER
 exports.updateController = async (req, res) => {
   if (req.body.password) {
-    req.body.password = CryptoJs.AES.encrypt(
-      req.body.password,
-      process.env.PAS_SECURITY
-    ).toString();
+    req.body.password = CryptoJs.AES.encrypt(req.body.password, process.env.PAS_SECURITY).toString();
   }
 
   try {
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-    res.status(200).json(updatedUser);
+    const updatedUser = await UserModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    res.status(httpStatus.OK).json(updatedUser);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
 };
 
@@ -124,9 +96,9 @@ exports.updateController = async (req, res) => {
 exports.deleteController = async (req, res) => {
   try {
     await UserModel.findByIdAndDelete(req.params.id);
-    res.status(200).json("User has been deleted.");
+    res.status(httpStatus.OK).json("User has been deleted.");
   } catch (err) {
-    res.status(500).json(err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
 };
 
@@ -134,8 +106,8 @@ exports.deleteController = async (req, res) => {
 exports.getUserController = async (req, res) => {
   try {
     let currentUser = await UserModel.findById(req.params.id);
-    res.status(200).json(currentUser);
+    res.status(httpStatus.OK).json(currentUser);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
 };
