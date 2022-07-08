@@ -1,6 +1,6 @@
 ### ALL APIS
-<<<<<<< Updated upstream
-<img width="366" height="520" alt="Ekran Resmi 2022-07-06 02 10 57" src="https://user-images.githubusercontent.com/13710309/177431716-821ffde1-81f6-4374-b147-6ee1f30f2a79.png">
+
+<img width="366" height="650" alt="Ekran Resmi 2022-07-06 02 10 57" src="https://user-images.githubusercontent.com/13710309/177431716-821ffde1-81f6-4374-b147-6ee1f30f2a79.png">
 
 
 ### LOGIN
