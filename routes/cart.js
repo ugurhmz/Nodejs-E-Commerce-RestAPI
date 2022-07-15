@@ -4,7 +4,6 @@ const router = require("express").Router();
 const validate = require("../middleware/validate");
 const cartJoi = require("../validations/Cart");
 
-// ROUTES
 router.post("/", validate(cartJoi.createCartValidation), tokenVerify, createCartController);
 router.put("/update/cartId/:id", tokenVerify, updateCartController);
 router.delete("/delete-all/cartId/:id", tokenVerify, deleteCartController);

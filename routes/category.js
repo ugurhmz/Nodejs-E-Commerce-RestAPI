@@ -1,4 +1,3 @@
-const CategoryModel = require("../models/CategoryModel");
 const { verifyTokenAdmin } = require("../middleware/tokenVerify");
 const router = require("express").Router();
 const { createCategoryController, getAllCategoriesController, getOneCategoryController } = require("../controllers/Category");

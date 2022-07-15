@@ -1,4 +1,3 @@
-const ProductModel = require("../models/ProductModel");
 const { verifyTokenAdmin, tokenVerify } = require("../middleware/tokenVerify");
 const router = require("express").Router();
 const { createProductController, getAllProductsController, getOneProductController } = require("../controllers/Product");
