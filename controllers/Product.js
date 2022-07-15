@@ -30,7 +30,7 @@ exports.getAllProductsController = async (req, res) => {
         },
         {
           $match: {
-            "categories.name": { $regex: new RegExp(`^${qCategory}$`), $options: "i" },
+            $or: [{ "categories.name": { $regex: new RegExp(`^${qCategory}$`), $options: "i" } }, { "categories.name": { $regex: new RegExp(`${qCategory}`), $options: "i" } }],
           },
         },
       ]);
