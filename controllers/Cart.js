@@ -35,7 +35,7 @@ exports.createCartController = async (req, res) => {
           return res.status(httpStatus.BAD_REQUEST).json("Product quantity can not be 0!");
         }
 
-        product.quantity += quantity;
+        product.quantity = quantity;
         //console.log("PRD", product.quantity);
 
         cart.items[itemIndex] = product;
