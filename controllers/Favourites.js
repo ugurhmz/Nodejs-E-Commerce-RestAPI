@@ -75,3 +75,29 @@ exports.getUserFavouritesController = async (req, res) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
 };
+
+// DELETE
+exports.deleteFavItemsController = async (req, res) => {
+  const owner = req.body.owner;
+  console.log("itemId", req.query.itemId);
+  const itemId = req.query.itemId;
+  try {
+    let favs = await FavouriteModel.findOne({ owner });
+
+    const itemIndex = favs.items.findIndex((item) => item.itemId == itemId);
+
+    if (itemIndex > -1) {
+      let item = favs.items[itemIndex];
+      favs.items.splice(itemIndex, 1);
+
+      favs = await favs.save();
+
+      res.status(httpStatus.OK).send(favs);
+    } else {
+      res.status(httpStatus.NOT_FOUND).send("item not found");
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(httpStatus.BAD_REQUEST).send();
+  }
+};
