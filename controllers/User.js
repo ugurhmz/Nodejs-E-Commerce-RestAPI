@@ -1,62 +1,35 @@
 const UserModel = require("../models/UserModel");
-const CryptoJs = require("crypto-js");
-const jwt = require("jsonwebtoken");
 const httpStatus = require("http-status");
+const CryptoJs = require("crypto-js");
+const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
+const uuid = require("uuid");
 
-// REGISTER
+// REGISTER & E-MAIL verification
 exports.registerController = async (req, res) => {
-  const isEmail = await UserModel.find({
-    email: req.body.email,
-  });
-
-  if (isEmail[0]) {
-    return res.status(httpStatus.CONFLICT).json({
-      msg: "E-mail already exist!",
-    });
-  }
-
-  const newUser = new UserModel({
-    username: req.body.username,
-    email: req.body.email,
-    password: CryptoJs.AES.encrypt(req.body.password, process.env.PAS_SECURITY),
-    userImg: req.body.userImg,
-  });
+  const { email, username, name, password } = req.body;
 
   try {
-    const savedUser = await newUser.save();
-    res.status(httpStatus.OK).json(savedUser);
-  } catch (err) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
-  }
-};
-
-// LOGIN
-exports.loginController = async (req, res) => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(httpStatus.BAD_REQUEST).json({
-      msg: "Fields cannot be left blank!",
+    const findUser = await UserModel.findOne({
+      $or: [
+        {
+          email: email,
+        },
+        {
+          username: username,
+        },
+      ],
     });
-  }
 
-  try {
-    const hasUser = await UserModel.findOne({ email: req.body.email });
-
-    if (!hasUser) {
-      return res.status(httpStatus.NOT_FOUND).json({
-        msg: "User not found, try again!",
+    if (findUser) {
+      return res.status(httpStatus.CONFLICT).json({
+        error: "This record already exists!, Pls change e-mail or username!",
       });
     }
-    const hashedPassword = CryptoJs.AES.decrypt(hasUser.password, process.env.PAS_SECURITY);
-    const dbPassword = hashedPassword.toString(CryptoJs.enc.Utf8);
-    if (dbPassword !== req.body.password) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        msg: "Your password is wrong please fix it!",
-      });
-    }
-    const accessToken = jwt.sign(
+
+    const token = jwt.sign(
       {
-        id: hasUser._id,
-        isAdmin: hasUser.isAdmin,
+        email,
       },
       process.env.JWT_SECURITY,
       {
@@ -64,15 +37,205 @@ exports.loginController = async (req, res) => {
       }
     );
 
-    const { password, ...exceptThePassword } = hasUser._doc;
+    const newUser = new UserModel({
+      email: email,
+      username: username,
+      name: name,
+      password: CryptoJs.AES.encrypt(req.body.password, process.env.PAS_SECURITY),
+      activationToken: token,
+      isVerified: false,
+    });
+    const savedUser = await newUser.save();
 
-    // response
-    const loginMsg = "Login success.";
+    const emailInfo = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: "Account activation link",
+      html: `<h1>Please Click to activate your mail.</h1>
+            <p>http://localhost:3000/ugurapi/user/activation/${token}</p>
+            <hr/> `,
+    };
+
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: `${process.env.EMAIL_FROM}`,
+        pass: `${process.env.EMAIL_PW}`,
+      },
+    });
+
+    transporter
+      .sendMail(emailInfo)
+      .then((sent) => {
+        return res.status(httpStatus.OK).json({
+          message: `Activation link,  has been sent to your ${email}.`,
+        });
+      })
+      .catch((err) => {
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+          errormsg: err,
+        });
+      });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
+  }
+};
+
+// ACTIVATION
+exports.userActivationController = async (req, res) => {
+  try {
+    const paramToken = req.params.token;
+    const findUser = await UserModel.findOne({ activationToken: paramToken });
+
+    if (findUser) {
+      findUser.activationToken = null;
+      findUser.isVerified = true;
+      const verifiedSavedUser = await findUser.save();
+      return res.status(httpStatus.OK).json("Registration successful");
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json("E-mail not verified");
+    }
+  } catch (err) {
+    res.status(httpStatus.UNAVAILABLE_FOR_LEGAL_REASONS).json("E-mail not verified");
+  }
+};
+
+// LOGIN
+exports.loginController = async (req, res) => {
+  try {
+    const findUser = await UserModel.findOne({ email: req.body.email });
+
+    if (!findUser) {
+      return res.status(httpStatus.NOT_FOUND).send({
+        msg: "User not found, try again!",
+      });
+    }
+
+    const decryptUserPassword = CryptoJs.AES.decrypt(findUser.password, process.env.PAS_SECURITY);
+
+    const userDbPassword = decryptUserPassword.toString(CryptoJs.enc.Utf8);
+    if (userDbPassword !== req.body.password) {
+      return res.status(httpStatus.NOT_FOUND).json({
+        error: "Your password is wrong please fix it!",
+      });
+    }
+
+    const loginToken = jwt.sign(
+      {
+        id: findUser._id,
+      },
+      process.env.JWT_SECURITY,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    const { password, ...exceptThePassword } = findUser._doc;
     res.status(httpStatus.OK).json({
       ...exceptThePassword,
-      accessToken,
-      loginMsg,
+      loginToken,
     });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
+  }
+};
+
+// FORGET PASSWORD
+exports.resetPasswordController = async (req, res) => {
+  try {
+    const findUser = await UserModel.findOne({ email: req.body.email });
+
+    if (!findUser) {
+      return res.status(httpStatus.NOT_FOUND).json({
+        msg: "User not found, try again!",
+      });
+    }
+
+    const newPassword = uuid.v4()?.split("-")[0] || new Date().getTime();
+    console.log(newPassword);
+    const updatedUser = await UserModel.findOneAndUpdate(
+      {
+        email: req.body.email,
+      },
+      {
+        password: CryptoJs.AES.encrypt(newPassword, process.env.PAS_SECURITY).toString(),
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: "User password Update error!!",
+      });
+    }
+
+    // Pw reset success then  send to email
+    const { email } = req.body;
+    console.log(email);
+
+    const emailInfo = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: "Reset password",
+      html: `<h3>Your password has been successfully updated.</h3>
+            <p>New password: ${newPassword}</p>
+            <hr/> `,
+    };
+
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: `${process.env.EMAIL_FROM}`,
+        pass: `${process.env.EMAIL_PW}`,
+      },
+    });
+
+    const { password, ...exceptThePassword } = findUser._doc;
+
+    transporter
+      .sendMail(emailInfo)
+      .then((sent) => {
+        return res.status(httpStatus.OK).json({
+          message: `Your new password has been sent to your ${email}.`,
+          updatedUser: exceptThePassword,
+        });
+      })
+      .catch((err) => {
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+          errormsg: err,
+        });
+      });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
+  }
+};
+
+// LOGUT
+exports.logOutController = async (req, res) => {
+  const authHeader = req.headers.token;
+
+  if (authHeader) {
+    const splitToken = authHeader.split(" ")[1];
+    const userToken = req.user.token;
+
+    try {
+      const findUser = await UserModel.findById(req.user._id);
+      const loginToken = null;
+
+      res.status(httpStatus.OK).json({ message: "Successfully Logout" });
+    } catch (err) {
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
+    }
+  } else {
+    return res.status(httpStatus.UNAUTHORIZED).json({ msg: "Authorization fail!" });
+  }
+};
+
+// GET
+exports.getUserController = async (req, res) => {
+  try {
+    let currentUser = await UserModel.findById(req.params.id);
+    res.status(httpStatus.OK).json(currentUser);
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
@@ -87,26 +250,6 @@ exports.updateController = async (req, res) => {
   try {
     const updatedUser = await UserModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
     res.status(httpStatus.OK).json(updatedUser);
-  } catch (err) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
-  }
-};
-
-// DELETE USER
-exports.deleteController = async (req, res) => {
-  try {
-    await UserModel.findByIdAndDelete(req.params.id);
-    res.status(httpStatus.OK).json("User has been deleted.");
-  } catch (err) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
-  }
-};
-
-// GET
-exports.getUserController = async (req, res) => {
-  try {
-    let currentUser = await UserModel.findById(req.params.id);
-    res.status(httpStatus.OK).json(currentUser);
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json(err);
   }
