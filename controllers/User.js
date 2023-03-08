@@ -123,7 +123,9 @@ exports.loginController = async (req, res) => {
     const loginToken = jwt.sign(
       {
         id: findUser._id,
+        isadmin: findUser.isAdmin,
       },
+
       process.env.JWT_SECURITY,
       {
         expiresIn: "7d",
