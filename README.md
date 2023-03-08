@@ -1,5 +1,12 @@
 ### ALL APIS
 
+### NOT: .env contents:
+JWT_SECURITY=JWT_KEY
+EMAIL_PW=YOUR_MAIL_PW
+EMAIL_FROM=YOUR_MAIL_GMAIL_SMTP
+PAS_SECURITY=JWT_SECRET_KEY
+DB_URL=YOUR_DB_URL
+
 <img width="366" height="650" alt="Ekran Resmi 2022-07-06 02 10 57" src="https://user-images.githubusercontent.com/13710309/177431716-821ffde1-81f6-4374-b147-6ee1f30f2a79.png">
 
 
